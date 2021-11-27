@@ -3,7 +3,7 @@ import { listPosts } from '../graphql/queries';
 import { API, graphqlOperation } from 'aws-amplify';
 import DeletePosts from './DeletePosts';
 import EditPost from './EditPost';
-import { onCreatePost, onDeletePost } from '../graphql/subscriptions';
+import { onCreatePost, onDeletePost, onUpdatePost } from '../graphql/subscriptions';
 
 export default function DisplayPosts() {
 	const [posts, setPosts] = useState([]);
@@ -33,8 +33,9 @@ export default function DisplayPosts() {
 			.subscribe({
 				next: (postData) => {
 					const newPost = postData.value.data.onCreatePost;
-					const currentPosts = [...posts];
-					setPosts([newPost, ...currentPosts]);
+					postsRef.current.push(newPost);
+					// const currentPosts = [...postsRef.current, newPost];
+					setPosts(postsRef.current);
 				}
 			})
 
@@ -43,14 +44,31 @@ export default function DisplayPosts() {
 				next: (postData) => {
 					const deletedPost = postData.value.data.onDeletePost;
 
-					const currentPosts = posts.filter(post => post.id !== deletedPost.id);
-					setPosts(currentPosts);
+					// const currentPosts = posts.filter(post => post.id !== deletedPost.id);
+					postsRef.current = postsRef.current.filter(post => post.id !== deletedPost.id);
+					setPosts(postsRef.current);
+				}
+			})
+
+		const updatePostListener = API.graphql(graphqlOperation(onUpdatePost))
+			.subscribe({
+				next: (postData) => {
+					const updatedPost = postData.value.data.onUpdatePost;
+
+					postsRef.current = postsRef.current.map(post => {
+						if(post.id === updatedPost.id) return updatedPost;
+
+						return post;
+					});
+
+					setPosts(postsRef.current);
 				}
 			})
 
 		return () => {
 			createPostListener.unsubscribe();
 			deletePostListener.unsubscribe();
+			updatePostListener.unsubscribe();
 		}
 	}, []);
 
