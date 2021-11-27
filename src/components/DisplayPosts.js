@@ -71,7 +71,7 @@ export default function DisplayPosts() {
 							<br/><br/>
 							<DeletePosts postId={item.id} />
 							<br/><br/>
-							<EditPost />
+							<EditPost postId={item.id} />
 						</div>
 					);
 				})
