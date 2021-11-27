@@ -3,6 +3,7 @@ import { listPosts } from '../graphql/queries';
 import { API, graphqlOperation } from 'aws-amplify';
 import DeletePosts from './DeletePosts';
 import EditPost from './EditPost';
+import { onCreatePost } from '../graphql/subscriptions';
 
 export default function DisplayPosts() {
 	const [posts, setPosts] = useState([]);
@@ -18,8 +19,29 @@ export default function DisplayPosts() {
 		}
 
 		getPosts();
+
 	}, []);
 
+	useEffect(() => {
+		const createPostListener = API.graphql(graphqlOperation(onCreatePost))
+			.subscribe({
+				next: postData => {
+					console.log({ postData });
+					const newPost = postData.value.data.onCreatePost;
+
+					updatePosts([newPost, ...posts]);
+				}
+			})
+
+		return () => {
+			createPostListener.unsubscribe();
+		}
+	}, []);
+
+	function updatePosts(newPosts) {
+		console.log({ newPosts });
+		setPosts(newPosts);
+	}
 
 	return (
 		<div>

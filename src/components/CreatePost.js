@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { listPosts } from '../graphql/queries';
+import { createPost } from '../graphql/mutations';
 import { API, graphqlOperation } from 'aws-amplify';
 
 export default function CreatePost() {
 
 	const [post, setPost] = useState({ postTitle: '', postBody: '' });
 
-	function handleSubmit(e) {
+	async function handleSubmit(e) {
 		e.preventDefault();
-		console.log({ post });
+		await API.graphql(graphqlOperation(createPost, { input: { ...post, postOwnerId: '4534543', postOwnerUsername: 'Fulano' } }));
+		setPost({ postTitle: '', postBody: '' });
 	}
 
 	return (
