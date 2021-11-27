@@ -1,0 +1,4 @@
+- Fazer subscription funcionar com useEffect
+	- onCreatePost só exibe o último
+	- onDelete limpa a lista
+- Achar forma de sincronizar arquivos de schema, query e mutations

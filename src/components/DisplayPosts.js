@@ -1,18 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { listPosts } from '../graphql/queries';
 import { API, graphqlOperation } from 'aws-amplify';
 import DeletePosts from './DeletePosts';
 import EditPost from './EditPost';
-import { onCreatePost } from '../graphql/subscriptions';
+import { onCreatePost, onDeletePost } from '../graphql/subscriptions';
 
 export default function DisplayPosts() {
 	const [posts, setPosts] = useState([]);
+	const postsRef = useRef([]);
 
 	useEffect(() => {
 		const getPosts = async () => {
 			try {
 				const result = await API.graphql(graphqlOperation(listPosts));
 				setPosts(result.data.listPosts.items);
+				postsRef.current = result.data.listPosts.items;
 			} catch(e) {
 				throw new Error(e.message);
 			}
@@ -22,26 +24,38 @@ export default function DisplayPosts() {
 
 	}, []);
 
+	console.log('Refresh Display')
+
 	useEffect(() => {
+
+		console.log('useEffect subscribe')
 		const createPostListener = API.graphql(graphqlOperation(onCreatePost))
 			.subscribe({
-				next: postData => {
-					console.log({ postData });
+				next: (postData) => {
 					const newPost = postData.value.data.onCreatePost;
+					const currentPosts = [...posts];
+					setPosts([newPost, ...currentPosts]);
+				}
+			})
 
-					updatePosts([newPost, ...posts]);
+		const deletePostListener = API.graphql(graphqlOperation(onDeletePost))
+			.subscribe({
+				next: (postData) => {
+					const deletedPost = postData.value.data.onDeletePost;
+
+					const currentPosts = posts.filter(post => post.id !== deletedPost.id);
+					setPosts(currentPosts);
 				}
 			})
 
 		return () => {
 			createPostListener.unsubscribe();
+			deletePostListener.unsubscribe();
 		}
 	}, []);
 
-	function updatePosts(newPosts) {
-		console.log({ newPosts });
-		setPosts(newPosts);
-	}
+	useEffect(() => {
+	}, [posts]);
 
 	return (
 		<div>
@@ -55,7 +69,7 @@ export default function DisplayPosts() {
 							<br/>
 							<time>{new Date(item.createdAt).toDateString()}</time>
 							<br/><br/>
-							<DeletePosts />
+							<DeletePosts postId={item.id} />
 							<br/><br/>
 							<EditPost />
 						</div>

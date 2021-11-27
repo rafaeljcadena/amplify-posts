@@ -1,14 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPost } from '../graphql/mutations';
-import { API, graphqlOperation } from 'aws-amplify';
+import { API, graphqlOperation, Auth } from 'aws-amplify';
 
 export default function CreatePost() {
 
 	const [post, setPost] = useState({ postTitle: '', postBody: '' });
+	const [user, setUser] = useState({});
+	 
+	useEffect(() => {
+		//TODO: Auth
+		const getCurrentUser = async () => {
+			const currentUser = await Auth.currentUserInfo()
+			setUser(currentUser);
+		}
+
+		getCurrentUser();
+	}, []);
 
 	async function handleSubmit(e) {
 		e.preventDefault();
-		await API.graphql(graphqlOperation(createPost, { input: { ...post, postOwnerId: '4534543', postOwnerUsername: 'Fulano' } }));
+		await API.graphql(graphqlOperation(createPost, { input: { ...post, postOwnerId: user.id, postOwnerUsername: 'Fulano' } }));
 		setPost({ postTitle: '', postBody: '' });
 	}
 
