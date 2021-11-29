@@ -5,3 +5,7 @@
 - Tirar obrigatoriedade de alguns campos e fazer funcionar com as mutations
 - Testar remover alguma mutation e fazer refletir no sistema
 - Ver autenticação em componentes customizados
+- Descobrir como fazer override de resolvers
+	- https://docs.amplify.aws/cli/graphql/custom-business-logic/#vtl-resolver
+- Descobrir como mockar e debuggar resolvers localmente
+	- https://docs.amplify.aws/cli/usage/mock/
