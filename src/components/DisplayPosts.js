@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { listPosts } from '../graphql/queries';
+import * as queries from '../graphql/queries';
 import { API, graphqlOperation, Auth } from 'aws-amplify';
 import DeletePosts from './DeletePosts';
 import CreateComment from './CreateComment';
 import EditPost from './EditPost';
-import { onCreatePost, onDeletePost, onUpdatePost, onCreateComment, onCreateLike } from '../graphql/subscriptions';
-import { createLike } from '../graphql/mutations';
+import * as subscriptions from '../graphql/subscriptions';
+import * as mutations from '../graphql/mutations';
 import { FaThumbsUp } from 'react-icons/fa';
 
 export default function DisplayPosts() {
@@ -17,7 +17,7 @@ export default function DisplayPosts() {
 	useEffect(() => {
 		const getPosts = async () => {
 			try {
-				const result = await API.graphql(graphqlOperation(listPosts));
+				const result = await API.graphql(graphqlOperation(queries.listPosts, { limit: 1 }));
 				updatePosts(result.data.listPosts.items);
 				console.log({ result });
 			} catch(e) {
@@ -42,7 +42,7 @@ export default function DisplayPosts() {
 	useEffect(() => {
 
 		console.log('useEffect subscribe')
-		const createPostListener = API.graphql(graphqlOperation(onCreatePost))
+		const createPostListener = API.graphql(graphqlOperation(subscriptions.onCreatePost))
 			.subscribe({
 				next: (postData) => {
 					const newPost = postData.value.data.onCreatePost;
@@ -52,7 +52,7 @@ export default function DisplayPosts() {
 				}
 			})
 
-		const deletePostListener = API.graphql(graphqlOperation(onDeletePost))
+		const deletePostListener = API.graphql(graphqlOperation(subscriptions.onDeletePost))
 			.subscribe({
 				next: (postData) => {
 					const deletedPost = postData.value.data.onDeletePost;
@@ -62,7 +62,7 @@ export default function DisplayPosts() {
 				}
 			})
 
-		const updatePostListener = API.graphql(graphqlOperation(onUpdatePost))
+		const updatePostListener = API.graphql(graphqlOperation(subscriptions.onUpdatePost))
 			.subscribe({
 				next: (postData) => {
 					const updatedPost = postData.value.data.onUpdatePost;
@@ -80,7 +80,7 @@ export default function DisplayPosts() {
 			});
 
 
-		const createPostCommentListener = API.graphql(graphqlOperation(onCreateComment))
+		const createPostCommentListener = API.graphql(graphqlOperation(subscriptions.onCreateComment))
 			.subscribe({
 				next: commentData => {
 					const createdComment = commentData.value.data.onCreateComment;
@@ -94,7 +94,7 @@ export default function DisplayPosts() {
 				}
 			});
 
-		const createPostLikeListener = API.graphql(graphqlOperation(onCreateLike))
+		const createPostLikeListener = API.graphql(graphqlOperation(subscriptions.onCreateLike))
 			.subscribe({
 				next: postData => {
 					const createdLike = postData.value.data.onCreateLike;
@@ -139,7 +139,7 @@ export default function DisplayPosts() {
 
 		try {
 			// await API.graphql({ query: createLike, variables: { input } });
-		await API.graphql(graphqlOperation(createLike, { input }));
+		await API.graphql(graphqlOperation(mutations.createLike, { input }));
 		} catch(error) {
 			console.error(error);
 		}
