@@ -4,3 +4,4 @@
 - Achar forma de sincronizar arquivos de schema, query e mutations
 - Tirar obrigatoriedade de alguns campos e fazer funcionar com as mutations
 - Testar remover alguma mutation e fazer refletir no sistema
+- Ver autenticação em componentes customizados

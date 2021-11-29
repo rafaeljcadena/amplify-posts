@@ -1,30 +1,43 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { listPosts } from '../graphql/queries';
-import { API, graphqlOperation } from 'aws-amplify';
+import { API, graphqlOperation, Auth } from 'aws-amplify';
 import DeletePosts from './DeletePosts';
+import CreateComment from './CreateComment';
 import EditPost from './EditPost';
-import { onCreatePost, onDeletePost, onUpdatePost } from '../graphql/subscriptions';
+import { onCreatePost, onDeletePost, onUpdatePost, onCreateComment, onCreateLike } from '../graphql/subscriptions';
+import { createLike } from '../graphql/mutations';
+import { FaThumbsUp } from 'react-icons/fa';
 
 export default function DisplayPosts() {
 	const [posts, setPosts] = useState([]);
 	const postsRef = useRef([]);
 
+	const [user, setUser] = useState({});
+
 	useEffect(() => {
 		const getPosts = async () => {
 			try {
 				const result = await API.graphql(graphqlOperation(listPosts));
-				setPosts(result.data.listPosts.items);
-				postsRef.current = result.data.listPosts.items;
+				updatePosts(result.data.listPosts.items);
+				console.log({ result });
 			} catch(e) {
 				throw new Error(e.message);
 			}
 		}
 
+		fetchCurrentUser();
 		getPosts();
-
 	}, []);
 
-	console.log('Refresh Display')
+	function likedPost(postId) {
+		const postIndex = posts.findIndex(post => post.id === postId)
+		if(postIndex === -1) return false;
+
+		const likeIndex = posts[postIndex].likes.items.findIndex(like => like.likeOwnerId === user.id);
+		if(likeIndex !== -1) return true;
+
+		return false;
+	}
 
 	useEffect(() => {
 
@@ -33,9 +46,9 @@ export default function DisplayPosts() {
 			.subscribe({
 				next: (postData) => {
 					const newPost = postData.value.data.onCreatePost;
-					postsRef.current.push(newPost);
-					// const currentPosts = [...postsRef.current, newPost];
-					setPosts(postsRef.current);
+
+					const currentPosts = [...postsRef.current, newPost];
+					setPosts(currentPosts);
 				}
 			})
 
@@ -44,9 +57,8 @@ export default function DisplayPosts() {
 				next: (postData) => {
 					const deletedPost = postData.value.data.onDeletePost;
 
-					// const currentPosts = posts.filter(post => post.id !== deletedPost.id);
-					postsRef.current = postsRef.current.filter(post => post.id !== deletedPost.id);
-					setPosts(postsRef.current);
+					const currentPosts = postsRef.current.filter(post => post.id !== deletedPost.id);
+					updatePosts(currentPosts);
 				}
 			})
 
@@ -55,25 +67,83 @@ export default function DisplayPosts() {
 				next: (postData) => {
 					const updatedPost = postData.value.data.onUpdatePost;
 
-					postsRef.current = postsRef.current.map(post => {
+					const currentPosts = postsRef.current.map(post => {
 						if(post.id === updatedPost.id) return updatedPost;
 
 						return post;
 					});
 
-					setPosts(postsRef.current);
+
+
+					updatePosts(currentPosts);
 				}
-			})
+			});
+
+
+		const createPostCommentListener = API.graphql(graphqlOperation(onCreateComment))
+			.subscribe({
+				next: commentData => {
+					const createdComment = commentData.value.data.onCreateComment;
+					const currentPosts = postsRef.current.map(post => {
+						if(post.id === createdComment.post.id) post.comments.items.push(createdComment);
+
+						return post;
+					});
+
+					updatePosts(currentPosts);
+				}
+			});
+
+		const createPostLikeListener = API.graphql(graphqlOperation(onCreateLike))
+			.subscribe({
+				next: postData => {
+					const createdLike = postData.value.data.onCreateLike;
+					console.log({ createdLike })
+					const currentPosts = postsRef.current.map(post => {
+						if(post.id === createdLike.post.id) post.likes.items.push(createdLike);
+
+						return post;
+					});
+
+					updatePosts(currentPosts);
+				}
+			});
 
 		return () => {
 			createPostListener.unsubscribe();
 			deletePostListener.unsubscribe();
 			updatePostListener.unsubscribe();
+
+			createPostCommentListener.unsubscribe();
+			createPostLikeListener.unsubscribe();
 		}
 	}, []);
 
-	useEffect(() => {
-	}, [posts]);
+	function updatePosts(items){
+		postsRef.current = items;
+		setPosts(items);
+	}
+
+	async function fetchCurrentUser() {
+		const currentUser = await Auth.currentUserInfo()
+		setUser(currentUser);
+	}
+	
+	async function handleLike(postId) {
+		const input = {
+			numberLikes: 1,
+			likeOwnerId: user.id,
+			likeOwnerUsername: user.username,
+			likePostId: postId,
+		};
+
+		try {
+			// await API.graphql({ query: createLike, variables: { input } });
+		await API.graphql(graphqlOperation(createLike, { input }));
+		} catch(error) {
+			console.error(error);
+		}
+	}
 
 	return (
 		<div>
@@ -87,9 +157,29 @@ export default function DisplayPosts() {
 							<br/>
 							<time>{new Date(item.createdAt).toDateString()}</time>
 							<br/><br/>
+
 							<DeletePosts postId={item.id} />
-							<br/><br/>
-							<EditPost postId={item.id} />
+							<EditPost postId={item.id} /><br/>
+
+							<div>
+								<br />
+								<button onClick={() => handleLike(item.id)}>
+									<FaThumbsUp /> <span>{item.likes.items.length}</span>
+								</button>
+							</div>
+
+							<h4>Comments</h4>
+							{item.comments.items.map(comment => {
+								return (
+									<div>
+										<p>{comment.content}</p>
+										<small>{comment.commentOwnerUsername}</small>
+									</div>
+								);
+							})}
+
+							<CreateComment postId={item.id} />
+							<hr />
 						</div>
 					);
 				})
