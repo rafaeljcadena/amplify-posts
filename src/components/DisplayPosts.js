@@ -17,7 +17,7 @@ export default function DisplayPosts() {
 	useEffect(() => {
 		const getPosts = async () => {
 			try {
-				const result = await API.graphql(graphqlOperation(queries.listPosts, { limit: 1 }));
+				const result = await API.graphql(graphqlOperation(queries.listPosts));
 				updatePosts(result.data.listPosts.items);
 				console.log({ result });
 			} catch(e) {
