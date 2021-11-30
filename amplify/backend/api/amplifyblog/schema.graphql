@@ -9,7 +9,8 @@ type Post @model {
 	likes: [Like] @connection(name: "PostLikes")
 }
 
-type Comment @model {
+type Comment @model 
+	@key(name: "commentsByUser", fields: ["commentOwnerId", "createdAt"], queryField: "commentsByUser"){
 	id: ID!
 	commentOwnerId: String!
 	commentOwnerUsername: String!

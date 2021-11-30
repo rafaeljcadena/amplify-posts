@@ -15,18 +15,22 @@ export default function DisplayPosts() {
 	const [user, setUser] = useState({});
 
 	useEffect(() => {
-		const getPosts = async () => {
+		if(!user.id) return null;
+
+		const getPosts = async (userId) => {
 			try {
-				const result = await API.graphql(graphqlOperation(queries.listPosts));
+				const result = await API.graphql({ query: queries.listPosts, variables: { filter: { postOwnerId: { eq: user.id } }, sortDirection: 'DESC' } });
 				updatePosts(result.data.listPosts.items);
-				console.log({ result });
 			} catch(e) {
-				throw new Error(e.message);
+				console.log({ e });
 			}
 		}
 
-		fetchCurrentUser();
 		getPosts();
+	}, [user]);
+
+	useEffect(() => {
+		fetchCurrentUser();
 	}, []);
 
 	function likedPost(postId) {
@@ -127,6 +131,7 @@ export default function DisplayPosts() {
 	async function fetchCurrentUser() {
 		const currentUser = await Auth.currentUserInfo()
 		setUser(currentUser);
+		return currentUser;
 	}
 	
 	async function handleLike(postId) {
@@ -164,19 +169,19 @@ export default function DisplayPosts() {
 							<div>
 								<br />
 								<button onClick={() => handleLike(item.id)}>
-									<FaThumbsUp /> <span>{item.likes.items.length}</span>
+									{/* <FaThumbsUp /> <span>{item.likes.items.length}</span> */}
 								</button>
 							</div>
 
 							<h4>Comments</h4>
-							{item.comments.items.map(comment => {
-								return (
-									<div>
-										<p>{comment.content}</p>
-										<small>{comment.commentOwnerUsername}</small>
-									</div>
-								);
-							})}
+							{/* {item.comments.items.map(comment => { */}
+							{/* 	return ( */}
+							{/* 		<div> */}
+							{/* 			<p>{comment.content}</p> */}
+							{/* 			<small>{comment.commentOwnerUsername}</small> */}
+							{/* 		</div> */}
+							{/* 	); */}
+							{/* })} */}
 
 							<CreateComment postId={item.id} />
 							<hr />
