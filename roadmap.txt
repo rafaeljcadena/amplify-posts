@@ -1,3 +1,9 @@
+- Pesquisar melhor forma de trazer os comments só de um usuário 
+- Pesquisar sobre "usar filters ou criar um index"
+- Olhar esse modelo: https://docs.amplify.aws/cli/graphql/examples-and-solutions/#warehouse-management-system
+
+
+
 - Fazer subscription funcionar com useEffect
 	- onCreatePost só exibe o último
 	- onDelete limpa a lista
@@ -9,5 +15,4 @@
 	- https://docs.amplify.aws/cli/graphql/custom-business-logic/#vtl-resolver
 - Descobrir como mockar e debuggar resolvers localmente
 	- https://docs.amplify.aws/cli/usage/mock/
-- Pesquisar sobre "usar filters ou criar um index"
-- Olhar esse modelo: https://docs.amplify.aws/cli/graphql/examples-and-solutions/#warehouse-management-system
+
