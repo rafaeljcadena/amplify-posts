@@ -15,6 +15,7 @@ export const getPost = /* GraphQL */ `
           id
           commentOwnerId
           commentOwnerUsername
+          postId
           content
           createdAt
           updatedAt
@@ -68,6 +69,7 @@ export const getComment = /* GraphQL */ `
       id
       commentOwnerId
       commentOwnerUsername
+      postId
       post {
         id
         postOwnerId
@@ -100,6 +102,7 @@ export const listComments = /* GraphQL */ `
         id
         commentOwnerId
         commentOwnerUsername
+        postId
         post {
           id
           postOwnerId
@@ -172,18 +175,18 @@ export const listLikes = /* GraphQL */ `
     }
   }
 `;
-export const commentsByUser = /* GraphQL */ `
-  query CommentsByUser(
-    $commentOwnerId: String
-    $createdAt: ModelStringKeyConditionInput
+export const commentsByAuthor = /* GraphQL */ `
+  query CommentsByAuthor(
+    $id: ID
+    $commentOwnerId: ModelStringKeyConditionInput
     $sortDirection: ModelSortDirection
     $filter: ModelCommentFilterInput
     $limit: Int
     $nextToken: String
   ) {
-    commentsByUser(
+    commentsByAuthor(
+      id: $id
       commentOwnerId: $commentOwnerId
-      createdAt: $createdAt
       sortDirection: $sortDirection
       filter: $filter
       limit: $limit
@@ -193,6 +196,7 @@ export const commentsByUser = /* GraphQL */ `
         id
         commentOwnerId
         commentOwnerUsername
+        postId
         post {
           id
           postOwnerId

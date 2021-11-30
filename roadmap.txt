@@ -1,8 +1,7 @@
 - Pesquisar melhor forma de trazer os comments só de um usuário 
-- Pesquisar sobre "usar filters ou criar um index"
+	- O jeito vai ser criar um index global
 - Olhar esse modelo: https://docs.amplify.aws/cli/graphql/examples-and-solutions/#warehouse-management-system
-
-
+- Ver história de colocar @auth nos models
 
 - Fazer subscription funcionar com useEffect
 	- onCreatePost só exibe o último

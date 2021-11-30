@@ -15,6 +15,7 @@ export const onCreatePost = /* GraphQL */ `
           id
           commentOwnerId
           commentOwnerUsername
+          postId
           content
           createdAt
           updatedAt
@@ -50,6 +51,7 @@ export const onUpdatePost = /* GraphQL */ `
           id
           commentOwnerId
           commentOwnerUsername
+          postId
           content
           createdAt
           updatedAt
@@ -85,6 +87,7 @@ export const onDeletePost = /* GraphQL */ `
           id
           commentOwnerId
           commentOwnerUsername
+          postId
           content
           createdAt
           updatedAt
@@ -112,6 +115,7 @@ export const onCreateComment = /* GraphQL */ `
       id
       commentOwnerId
       commentOwnerUsername
+      postId
       post {
         id
         postOwnerId
@@ -139,6 +143,7 @@ export const onUpdateComment = /* GraphQL */ `
       id
       commentOwnerId
       commentOwnerUsername
+      postId
       post {
         id
         postOwnerId
@@ -166,6 +171,7 @@ export const onDeleteComment = /* GraphQL */ `
       id
       commentOwnerId
       commentOwnerUsername
+      postId
       post {
         id
         postOwnerId

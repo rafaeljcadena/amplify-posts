@@ -10,11 +10,12 @@ type Post @model {
 }
 
 type Comment @model 
-	@key(name: "commentsByUser", fields: ["commentOwnerId", "createdAt"], queryField: "commentsByUser"){
+	@key(name: "commentsByAuthor", fields: ["id", "commentOwnerId"], queryField: "commentsByAuthor"){
 	id: ID!
 	commentOwnerId: String!
 	commentOwnerUsername: String!
-	post: Post @connection(name: "PostComments")
+	postId: ID!
+	post: Post @connection(name: "PostComments", fields: ["postId"])
 	content: String!
 	createdAt: String!
 }
